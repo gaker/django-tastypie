@@ -104,10 +104,6 @@ class Api(object):
 
         urlpatterns = self.prepend_urls()
 
-        if self.override_urls():
-            warnings.warn("'override_urls' is a deprecated method & will be removed by v1.0.0. Please rename your method to ``prepend_urls``.")
-            urlpatterns += self.override_urls()
-
         urlpatterns += patterns('',
             *pattern_list
         )
