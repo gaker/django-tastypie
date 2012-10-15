@@ -4,7 +4,7 @@ import time
 import uuid
 
 from django.conf import settings
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.middleware.csrf import _sanitize_token, constant_time_compare
 from django.utils.http import same_origin
@@ -178,7 +178,7 @@ class ApiKeyAuthentication(Authentication):
         Should return either ``True`` if allowed, ``False`` if not or an
         ``HttpResponse`` if you need something custom.
         """
-        from django.contrib.auth.models import User
+        UserModel = get_user_model()
 
         try:
             username, api_key = self.extract_credentials(request)
@@ -189,8 +189,8 @@ class ApiKeyAuthentication(Authentication):
             return self._unauthorized()
 
         try:
-            user = User.objects.get(username=username)
-        except (User.DoesNotExist, User.MultipleObjectsReturned):
+            user = UserModel.objects.get(username=username)
+        except (UserModel.DoesNotExist, UserModel.MultipleObjectsReturned):
             return self._unauthorized()
 
         if not self.check_active(user):
@@ -274,7 +274,11 @@ class SessionAuthentication(Authentication):
 
         This implementation returns the user's username.
         """
-        return request.user.username
+        UserModel = get_user_model()
+
+        username_field = getattr(UserModel, 'USERNAME_FIELD')
+
+        return getattr(request.user, username_field)
 
 
 class DigestAuthentication(Authentication):
